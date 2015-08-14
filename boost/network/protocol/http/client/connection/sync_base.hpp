@@ -133,10 +133,10 @@ struct sync_connection_base_impl {
     // look for the content-length header
     typename headers_range<basic_response<Tag> >::type content_length_range =
         headers(response_)["Content-Length"];
-    if (empty(content_length_range)) {
+    if (boost::empty(content_length_range)) {
       typename headers_range<basic_response<Tag> >::type
           transfer_encoding_range = headers(response_)["Transfer-Encoding"];
-      if (empty(transfer_encoding_range)) {
+      if (boost::empty(transfer_encoding_range)) {
         read_body_normal(socket_, response_, response_buffer, body_stream);
         return;
       }
@@ -245,14 +245,18 @@ struct sync_connection_base {
   // optional
   // ranges
   static sync_connection_base<Tag, version_major, version_minor>*
-  new_connection(
-      resolver_type& resolver, resolver_function_type resolve, bool https,
-      bool always_verify_peer, int timeout,
-      optional<string_type> const& certificate_filename =
-          optional<string_type>(),
-      optional<string_type> const& verify_path = optional<string_type>(),
-      optional<string_type> const& certificate_file = optional<string_type>(),
-      optional<string_type> const& private_key_file = optional<string_type>()) {
+      new_connection(
+          resolver_type& resolver, resolver_function_type resolve, bool https,
+          bool always_verify_peer, int timeout,
+          optional<string_type> const& certificate_filename =
+              optional<string_type>(),
+          optional<string_type> const& verify_path = optional<string_type>(),
+          optional<string_type> const& certificate_file =
+              optional<string_type>(),
+          optional<string_type> const& private_key_file =
+              optional<string_type>(),
+          optional<string_type> const& ciphers = optional<string_type>(),
+          long ssl_options = 0) {
     if (https) {
 #ifdef BOOST_NETWORK_ENABLE_HTTPS
       return dynamic_cast<
@@ -260,7 +264,7 @@ struct sync_connection_base {
           new https_sync_connection<Tag, version_major, version_minor>(
               resolver, resolve, always_verify_peer, timeout,
               certificate_filename, verify_path, certificate_file,
-              private_key_file));
+              private_key_file, ciphers, ssl_options));
 #else
       throw std::runtime_error("HTTPS not supported.");
 #endif
